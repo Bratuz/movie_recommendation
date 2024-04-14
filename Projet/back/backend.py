@@ -5,6 +5,7 @@ from google.oauth2 import service_account
 from collections import defaultdict
 from itertools import combinations
 import requests
+import os
 
 
 # Configuration BigQuery
@@ -28,68 +29,68 @@ client = Elasticsearch(
     api_key=API_KEY
 )
 
-# Dictionnaire pour stocker les favoris des utilisateurs
+# Dictionary to store user favorites
 favorites = {}
 
-# Créer une application Flask
+# Create a Flask application
 app = Flask(__name__)
 
-# Route pour la page d'accueil
+# Route for the home page
 @app.route("/")
 def home():
     return "Home"
 
-# Route pour l'autocomplétion des titres de film
+# Route for movie title autocomplete
 @app.route("/autocomplete")
 def autocomplete():
-    # Récupérer le terme de recherche depuis la requête
+    # Get the search term from the request
     query = request.args.get('query')
 
-    # Vérifier si le terme de recherche est vide
+    # Check if the search term is empty
     if not query:
-        return jsonify([])  # Retourner une liste vide si le terme de recherche est vide
+        return jsonify([])  # Return an empty list if the search term is empty
 
-    # Effectuer une recherche Elasticsearch pour obtenir les suggestions d'autocomplétion
+    # Perform an Elasticsearch search to get autocomplete suggestions
     body = {
         "query": {
             "match_phrase_prefix": {
-                "column2": {  # Recherche dans la clé 'column2' pour les titres des films
+                "column2": {  # Search in the key 'column2' for movie titles
                     "query": query,
-                    "max_expansions": 10  # Ajustez le nombre d'expansions au besoin
+                    "max_expansions": 10  # Adjust the number of expansions as needed
                 }
             }
         }
     }
 
     response = client.search(index=INDEX_NAME, body=body)
-    suggestions = [hit['_source']['column2'] for hit in response['hits']['hits']]  # Récupérer les titres des films
+    suggestions = [hit['_source']['column2'] for hit in response['hits']['hits']]  # Retrieve movie titles
     return jsonify(suggestions)
 
-# Route pour ajouter un film aux favoris
+# Route to add a movie to favorites
 @app.route("/add_favorite", methods=["POST"])
 def add_favorite():
     data = request.get_json()
     user_id = data.get("user_id")
     movie_id = data.get("movie_id")
     
-    # Vérifier si l'utilisateur existe dans le dictionnaire
+    # Check if the user exists in the dictionary
     if user_id in favorites:
-        # Ajouter le film à la liste de favoris de l'utilisateur existant
+        # Add the movie to the existing user's favorites list
         favorites[user_id].append(movie_id)
     else:
-        # Créer une nouvelle entrée pour l'utilisateur et ajouter le film
+        # Create a new entry for the user and add the movie
         favorites[user_id] = [movie_id]
     
-    return jsonify({"message": "Film ajouté aux favoris avec succès"})
+    return jsonify({"message": "Movie added to favorites successfully"})
 
-# Route pour récupérer la liste des favoris
+# Route to get the favorites list
 @app.route("/get_favorites", methods=["GET"])
 def get_favorites():
     user_id = request.args.get("user_id")
     if user_id in favorites:
         return jsonify(favorites[user_id])
     else:
-        return jsonify([])  # Retourner une liste vide si l'utilisateur n'a pas de favoris
+        return jsonify([])  # Return an empty list if the user has no favorites
 
 def user_rate():
     rate_user = {}
@@ -109,38 +110,38 @@ def user_rate():
         print(f"Failed to fetch or process data: {str(e)}")
     return rate_user
 
-# Fonction pour trouver les utilisateurs similaires
+# Function to find similar users
 def get_similar_users(target_user_id, ratings_data):
-    # Dictionnaire pour stocker les évaluations des films par utilisateur
+    # Dictionary to store movie ratings by user
     user_ratings = defaultdict(set)
     
-    # Remplir le dictionnaire avec les évaluations des films par utilisateur
+    # Populate the dictionary with movie ratings by user
     for user_id, movie_id in ratings_data:
         user_ratings[user_id].add(movie_id)
     
-    # Ensemble des films évalués par l'utilisateur cible
+    # Set of movies rated by the target user
     target_user_movies = user_ratings[target_user_id]
     
-    # Calculer la similarité de Jaccard entre l'utilisateur cible et chaque autre utilisateur
+    # Calculate Jaccard similarity between the target user and each other user
     similarities = {}
     for user_id, movies in user_ratings.items():
-        # Ignorer l'utilisateur cible lui-même
+        # Ignore the target user itself
         if user_id == target_user_id:
             continue
         
-        # Calculer l'intersection et l'union des ensembles de films
+        # Calculate the intersection and union of movie sets
         intersection = len(target_user_movies.intersection(movies))
         union = len(target_user_movies.union(movies))
         
-        # Calculer la similarité de Jaccard
+        # Calculate Jaccard similarity
         similarity = intersection / union
         
         similarities[user_id] = similarity
     
-    # Trier les utilisateurs par similarité en ordre décroissant
+    # Sort users by similarity in descending order
     sorted_users = sorted(similarities.items(), key=lambda x: x[1], reverse=True)
     
-    # Sélectionner les 3 utilisateurs les plus similaires
+    # Select the top 3 similar users
     top = [{"user_id": user_id, "similarity": similarity} for user_id, similarity in sorted_users[:3]]
     
     return top
@@ -150,7 +151,7 @@ def get_recommendations(user_id):
     recommendations = []
     similar_users = get_similar_users()
 
-    # S'assure que les identifiants sont des entiers et non des chaînes de caractères
+    # Ensure the IDs are integers rather than strings
     subquery = f"""
         SELECT userid
         FROM `{ratings_table}`
@@ -161,7 +162,6 @@ def get_recommendations(user_id):
         SELECT DISTINCT predicted_rating_im_confidence, userId, movieId
         FROM ML.RECOMMEND(MODEL `{model_table}`, (SELECT userid FROM ({subquery})))
         WHERE predicted_rating_im_confidence > 0.75
-        ORDER BY predicted_rating_im_confidence DESC
         LIMIT 10
     """
     # Execute the query
@@ -169,20 +169,20 @@ def get_recommendations(user_id):
     
     return recommendations
 
-#List of the reccomended movie titles
-@app.route('/display_reccomendations')
+#List of the recommended movie titles
+@app.route('/display_recommendations')
 def display_recommendations():
     movie_data = []
-    # Passer l'ID de l'utilisateur à la fonction de recommandation pour obtenir les recommandations
-    recommendations = get_recommendations("123")  # Utilisez un ID d'utilisateur factice pour l'instant
+    # Pass the user ID to the recommendation function to get recommendations
+    recommendations = get_recommendations("123")  # Use a dummy user ID for now
     for recommendation in recommendations:
         movie_id = recommendation['movieId']
-        # Utilisez l'ID du film pour obtenir le chemin du poster et le titre à partir de Elasticsearch
+        # Use the movie ID to get the poster path and title from Elasticsearch
         search_query = {"query": {"match": {"column1": movie_id}}}
         response = client.search(index=movies_table, body=search_query)
         if response['hits']['total']['value'] > 0:
             movie_title = response['hits']['hits'][0]['_source']['column2']
-            # Vous pouvez également obtenir le poster_path ici si nécessaire
+            # You can also get the poster_path here if needed
             movie_data.append({"movie_title": movie_title})
     return jsonify(movie_data)
 
@@ -198,4 +198,5 @@ def get_poster_path(tmdb_id):
 
 # Entry point of the Flask application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT',8080)))
+
