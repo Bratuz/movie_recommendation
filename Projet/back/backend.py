@@ -15,7 +15,7 @@ movies_table = "imperial-ally-417007.assignments2.movies"
 ratings_table = "imperial-ally-417007.assignments2.rates"
 links_table = "imperial-ally-417007.assignments2.links"
 model_table = "imperial-ally-417007.assignments2.MF-model"
-jsonkey_file_path = "/Users/kevin/Desktop/bonjour.json"
+jsonkey_file_path = "./bonjour.json"
 api_key = '207912d5baefe0c44b96b8f6a8110005'
 credentials = service_account.Credentials.from_service_account_file(jsonkey_file_path)
 client_query = bigquery.Client(credentials=credentials)
