@@ -8,6 +8,21 @@ import requests
 import os
 
 
+# Contenu JSON du fichier service account
+jsonkey_file_path = {
+  "type": "service_account",
+  "project_id": "imperial-ally-417007",
+  "private_key_id": "8c62a2c4a7099a8731e32cd34ebca2dad75d6558",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDOH74kl39fKua7\n6Oa7L52v83/+eaPdOEsrMdO94SmFEDVQtcURxu8SD0RwJtekAHCpvZp4lFTWi2c1\nZh+9EBbW01lmuHJa38WM1YYsHyvyjw6tkY6Vor8eF/LOj9wYbhTaqKMMhaQJlkvJ\nGBwZ3qugySlu1JmimXf3iUa2hU1YjuxYv7MFuw/dFbvNM4GqXfiK/T6UsICz5HOT\nPi+CGSPCTDY8Ph5AmHr5HVqx0AqPBA0+9N9FGWKXv7CXKkM2tL+lNHskrPUdj/Rq\nz3OKa3x0ZtK9Zn0LJV7bHFU8vwextjUX5a4RBDR9WVKTDSUVHJGeI5dtmVnfMknN\ntzwjL1AdAgMBAAECggEACygrXJkEAJy2hy6gvo+3PfzfeAtm0+SQ0l0MvwG0WPV6\n9/a+x1WN6durB/8HkQ2iYNhYch+6moT1KINx7a6J7fAxWJ6x4eVW22amBTayuZsG\nCl256rONG2M5y0sneKhiDJaFgiSsWlso7aZBGc1fBixH8oMjcGpU1LCOLqGh1syH\nVzSEDvoYp7cOh7FWHvkWku1ZiplFLJmnn30qS3tqqxExL81AcwYToSoxhtl0L0vs\nKw2ldAjNxyzmAXh6kwjBHk9LiVC21uNYj4d+83B7BGZpPOKeh72cNEyGwUGfqrW/\ntWt5ox4cZfPOAfL6p0BOvqtOHIYbOgkeFTBODOwvKQKBgQD8wx01RcNktrm4Pv+/\nbchCNa5sZNlbbhP0oLR3ciPbD9PqDlaXJuFKA8Y36SnOPwEaAxkhr2EGjr+91wZh\ndv/inM8zsykR9QURpEm62VfYp01aPL92/syIvFzbzIXwOVlCkOSinfonymkTI99r\n+y09djnHNkg/Fo4TW4lKJbF12wKBgQDQw7AD+AGCgmrEL92a2/yCtXCPs2oLr9cF\n3XTatC7EHZ+usAOCp4J2V2dlS2SiKHTR6yQciAm6q+df1xo1Th28JOVQcbzXA9H8\nZ1qs4pN8kzb9MjF7XZjHvcyUr12jQeUrEel9endxAaJDKBhdxP9NTT57Hp654J/H\nJH/7VNg/ZwKBgDRORCsUBr0+uuwPzWjV1Q0ugqvXqssq2mJTJ0VYj2bzvYy/7tdU\nqmZgpZJIY+hUTWwOnBLGcjOjMracWqusroM8o/w05RjcNXJTJxbNh0pERNOZop2D\nWNwq7qRljIoLtBb8WPP18SBu2JOnZsK3tcL0RjydVRIJHtmOpbh8WF7lAoGAcrh2\ni1fIDJ36aeEb2DO3aWSnfHBNgCqa8MAnrN+DK4ZT770N0MiYasvRJ9rsbCfrOkgL\nShp/rjM1LHeaEVzh/jgQQ8qcyVNyG0/4hjTkc3q6pxzkEDT49hqYx8Quor5dXvOy\n6Z9Y76LENj9cVHsjCKnAAgxrkR2c7+Rg6A5R31UCgYBsebMZQRN2YXAqNDmRLQOw\nfTjibEW9siP4bXX1HYzBIJC54vkzgqT/UHOpH5MZSZ8m4X2HgL/DwlRP+D05QDG7\nk8dlRlTPxB0A22clFZ1c/OaxQf6xipXcPATF2qbwcFzDMdUwWfmtPqOaXzdJRxoU\n2iDxKaqK99fDJMHEGAgcNw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "movie-dataset-csv-bucket@imperial-ally-417007.iam.gserviceaccount.com",
+  "client_id": "105972475584767264300",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/movie-dataset-csv-bucket%40imperial-ally-417007.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
+
 # Configuration BigQuery
 project_id = "imperial-ally-417007"
 dataset = "assignments2"
@@ -15,10 +30,11 @@ movies_table = "imperial-ally-417007.assignments2.movies"
 ratings_table = "imperial-ally-417007.assignments2.rates"
 links_table = "imperial-ally-417007.assignments2.links"
 model_table = "imperial-ally-417007.assignments2.MF-model"
-jsonkey_file_path = "./bonjour.json"
+jsonkey_file_path = "/Users/kevin/Desktop/bonjour.json"
 api_key = '207912d5baefe0c44b96b8f6a8110005'
 credentials = service_account.Credentials.from_service_account_file(jsonkey_file_path)
 client_query = bigquery.Client(credentials=credentials)
+
 
 # Configuration Elasticsearch
 URL_ENDPOINT = "https://ff4d964d84454a02adacd2be7108352a.europe-west9.gcp.elastic-cloud.com:443"
