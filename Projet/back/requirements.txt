@@ -1,0 +1,4 @@
+Flask
+elasticsearch
+google-cloud-bigquery
+requests 
